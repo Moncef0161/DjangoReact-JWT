@@ -46,9 +46,11 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
-    username = None
+    avatar = models.URLField(default='')  # Add avatar field
+    username = models.CharField(max_length=150, unique=True)  # Add username field
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username']  # Username is now required
+    
     objects = CustomUserManager()
 
     def __str__(self):

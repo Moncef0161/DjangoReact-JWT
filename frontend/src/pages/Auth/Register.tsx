@@ -24,9 +24,10 @@ const Register: React.FC = () => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
+    const username = formData.get("username") as string; // Added username
     const password = formData.get("password") as string;
 
-    const resultAction = await dispatch(registerUser({ email, password }));
+    const resultAction = await dispatch(registerUser({ email, username, password })); // Include username
     if (registerUser.fulfilled.match(resultAction)) {
       navigate("/login");
     }
@@ -50,6 +51,10 @@ const Register: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" name="email" type="email" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label> {/* Added username label */}
+              <Input id="username" name="username" type="text" required /> {/* Added username input */}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>

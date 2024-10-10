@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
-interface User {
+export interface User {
+  id: string;
   email: string;
   name: string;
   avatar: string;
+  username: string;  // Added username
 }
 
 interface AuthState {
@@ -45,7 +47,7 @@ export const loginUser = createAsyncThunk(
 export const registerUser = createAsyncThunk(
   "auth/register",
   async (
-    userData: { email: string; password: string },
+    userData: { email: string; password: string; name: string; username: string }, // Added name and username
     { rejectWithValue }
   ) => {
     try {
@@ -53,8 +55,6 @@ export const registerUser = createAsyncThunk(
         "http://127.0.0.1:8000/api/user/",
         userData
       );
-      // localStorage.setItem("token", response.data.access);
-      // Navigate to login page after registration
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
@@ -66,6 +66,22 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+export const updateProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async ({ id, ...userData }: { id: string } & Partial<User>, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`http://127.0.0.1:8000/api/user/${id}/`, userData);
+      return response.data; // Returns updated user data
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response.data.detail || "Something went wrong"
+      );  
+    }
+  }
+);
+
+
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -76,10 +92,8 @@ const authSlice = createSlice({
       state.token = null;
       localStorage.removeItem("token");
     },
-    updateProfile: (state, action: PayloadAction<Partial<User>>) => {
-      if (state.user) {
-        state.user = { ...state.user, ...action.payload };
-      }
+    updateProfileInState: (state, action: PayloadAction<User>) => {
+      state.user = { ...state.user, ...action.payload };
     },
   },
   extraReducers: (builder) => {
@@ -103,17 +117,31 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
-        // state.isAuthenticated = true;
+        state.isAuthenticated = true; // Assuming you want to auto-login after registration
         state.user = action.payload.user;
-        // state.token = action.payload.access;
+        localStorage.setItem("token", action.payload.access); // Set token if applicable
         state.loading = false;
       })
       .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        // Update user in the state with the new profile information
+        state.user = { ...state.user, ...action.payload };
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
   },
 });
 
-export const { logout, updateProfile } = authSlice.actions;
+// Export actions and reducer
+export const { logout, updateProfileInState } = authSlice.actions; // Corrected the export
 export default authSlice.reducer;
