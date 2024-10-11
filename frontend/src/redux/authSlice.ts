@@ -82,12 +82,14 @@ export const registerUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await api.post("/api/register/", userData);
+      const response = await api.post("/api/user/", userData);
 
       return { user: response.data };
     } catch (error: any) {
       throw (
-        error.response.data.detail || "An error occurred during registration"
+        error.response.data.detail ||
+        error.response.data[0] ||
+        "An error occurred during registration"
       );
     }
   }

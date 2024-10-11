@@ -5,6 +5,7 @@ import { useAppDispatch } from "@/redux/hooks";
 import { checkAuth } from "@/redux/authSlice";
 import { store } from "@/redux/store";
 import PrivateRoute from "@/components/PrivateRoute";
+import PublicRoute from "@/components/PublicRoute";
 import Navbar from "@/components/Navbar";
 import Home from "@/pages/Home/Home";
 import Login from "@/pages/Auth/Login";
@@ -25,8 +26,22 @@ const AppContent: React.FC = () => {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
           <Route
             path="/profile"
             element={
