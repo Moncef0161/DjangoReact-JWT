@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AppDispatch, RootState } from "@/redux/store";
+import { RootState, AppDispatch } from "@/redux/store";
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -26,16 +26,13 @@ const Login: React.FC = () => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const resultAction = await dispatch(loginUser({ email, password }));
-    if (loginUser.fulfilled.match(resultAction)) {
-      console.log("Login successful:", resultAction.payload);
-      // setError(null); // Clear error if login is successful
-      navigate("/");
-    } else if (loginUser.rejected.match(resultAction)) {
-      // Assuming error response has a `detail` key
-      // const errorMessage = resultAction.payload?.detail || "Login failed";
-      // setError(errorMessage);
-      console.error("Login failed:", resultAction.payload);
+    try {
+      const resultAction = await dispatch(loginUser({ email, password }));
+      if (loginUser.fulfilled.match(resultAction)) {
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
     }
   };
 
