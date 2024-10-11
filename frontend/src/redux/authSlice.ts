@@ -16,7 +16,6 @@ interface AuthState {
   loading: boolean;
   error: string | null;
 }
-
 interface JwtPayload {
   user_id: number;
   exp: number;
@@ -27,37 +26,51 @@ interface JwtPayload {
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
-  token: localStorage.getItem("token"),
+  token: null,
   loading: false,
   error: null,
 };
 
+const API_BASE_URL = "http://127.0.0.1:8000";
+// process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000";
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
+  return config;
+});
+
+const fetchUserDetails = async (userId: number, token: string) => {
+  const response = await api.get(`/api/user/${userId}/`);
+  return response.data;
+};
+
 export const loginUser = createAsyncThunk(
   "auth/login",
-  async (credentials: { email: string; password: string }, { dispatch }) => {
+  async (
+    credentials: { email: string; password: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/token/",
-        credentials
-      );
+      const response = await api.post("/api/token/", credentials);
       const { access } = response.data;
       localStorage.setItem("token", access);
 
       const decodedToken = jwtDecode<JwtPayload>(access);
-      const userId = decodedToken.user_id;
-      console.log("userId:", userId);
+      const user = await fetchUserDetails(decodedToken.user_id, access);
 
-      // Fetch user information
-      const userResponse = await axios.get(
-        `http://127.0.0.1:8000/api/user/${userId}/`,
-        {
-          headers: { Authorization: `Bearer ${access}` },
-        }
-      );
-
-      return { token: access, user: userResponse.data };
+      return { token: access, user };
     } catch (error: any) {
-      throw error.response.data;
+      throw error.response.data.detail || "An error occurred during login";
     }
   }
 );
@@ -66,62 +79,56 @@ export const registerUser = createAsyncThunk(
   "auth/register",
   async (
     userData: { username: string; email: string; password: string },
-    { dispatch }
+    { rejectWithValue }
   ) => {
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/register/",
-        userData
-      );
-      const { access } = response.data;
-      localStorage.setItem("token", access);
+      const response = await api.post("/api/register/", userData);
 
-      const decodedToken = jwtDecode<JwtPayload>(access);
-      const userId = decodedToken.user_id;
-      console.log("userId:", userId);
-
-      // Fetch user information
-      const userResponse = await axios.get(
-        `http://127.0.0.1:8000/api/user/${userId}/`,
-        {
-          headers: { Authorization: `Bearer ${access}` },
-        }
-      );
-
-      return { token: access, user: userResponse.data };
+      return { user: response.data };
     } catch (error: any) {
-      throw error.response.data;
+      throw (
+        error.response.data.detail || "An error occurred during registration"
+      );
     }
   }
 );
 
 export const updateUserProfile = createAsyncThunk(
   "auth/updateProfile",
-  async (
-    profileData: {
-      username: string;
-      email: string;
-      avatar: string;
-    },
-    { getState, rejectWithValue }
-  ) => {
+  async (profileData: Partial<User>, { getState, rejectWithValue }) => {
     try {
       const state = getState() as { auth: AuthState };
       const userId = state.auth.user?.id;
 
-      const response = await axios.patch(
-        `http://127.0.0.1:8000/api/user/${userId}/`,
-        profileData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      if (!userId) throw new Error("User not authenticated");
 
+      const response = await api.patch(`/api/user/${userId}/`, profileData);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response.data);
+      throw error.response?.data || "An error occurred while updating profile";
+    }
+  }
+);
+
+export const checkAuth = createAsyncThunk(
+  "auth/checkAuth",
+  async (_, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw "No token found";
+    }
+
+    try {
+      const decodedToken = jwtDecode<JwtPayload>(token);
+      if (Date.now() >= decodedToken.exp * 1000) {
+        throw new Error("Token expired");
+      }
+
+      const user = await fetchUserDetails(decodedToken.user_id, token);
+      return { token, user };
+    } catch (error) {
+      localStorage.removeItem("token");
+      throw "Invalid token";
     }
   }
 );
@@ -157,10 +164,10 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+      .addCase(registerUser.fulfilled, (state) => {
+        // state.isAuthenticated = true;
+        // state.user = action.payload.user;
+        // state.token = action.payload.token;
         state.loading = false;
       })
       .addCase(registerUser.rejected, (state, action) => {
@@ -178,6 +185,22 @@ const authSlice = createSlice({
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(checkAuth.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.loading = false;
+      })
+      .addCase(checkAuth.rejected, (state) => {
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        state.loading = false;
       });
   },
 });
