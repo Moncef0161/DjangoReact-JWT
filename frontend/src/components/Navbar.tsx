@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
                     alt="Profile"
                   />
                   <AvatarFallback className="bg-blue-500">
-                    {user?.name?.charAt(0) || "U"}
+                    {user?.username?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
               </Link>
