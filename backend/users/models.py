@@ -46,7 +46,7 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
-    avatar = models.URLField(default='', blank=True, null=True)  # Add avatar field
+    avatar = models.ImageField(blank=True, null=True, upload_to='avatars/')  # Add avatar field
     username = models.CharField(max_length=150, unique=True)  # Add username field
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']  # Username is now required
