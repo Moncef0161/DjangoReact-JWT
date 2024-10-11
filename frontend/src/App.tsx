@@ -12,6 +12,7 @@ import Login from "@/pages/Auth/Login";
 import Register from "@/pages/Auth/Register";
 import Profile from "@/pages/Profile/Profile";
 import NotFound from "@/components/NotFound";
+import { Toaster } from "@/components/ui/toaster";
 
 const AppContent: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -60,6 +61,7 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <Provider store={store}>
+      <Toaster />
       <AppContent />
     </Provider>
   );

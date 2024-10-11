@@ -1,59 +1,150 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "@/redux/authSlice";
-import { RootState } from "@/redux/store";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+
+import React, { useState } from "react"
+import { Link } from "react-router-dom"
+import { useSelector, useDispatch } from "react-redux"
+import { logout } from "@/redux/authSlice"
+import { RootState, AppDispatch } from "@/redux/store"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Menu, X, User, Settings, LogOut } from "lucide-react"
 
 const Navbar: React.FC = () => {
-  const dispatch = useDispatch();
-  const { isAuthenticated, user } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const dispatch = useDispatch<AppDispatch>()
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLogout = () => {
-    dispatch(logout());
-  };
+    dispatch(logout())
+  }
 
   return (
-    <nav className="bg-primary text-primary-foreground p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold">
-          AuthApp
-        </Link>
-        <div className="flex items-center space-x-4">
-          {isAuthenticated ? (
-            <>
-              <Link to="/profile">
-                <Avatar>
-                  <AvatarImage
-                    src={user?.avatar || "/default-avatar.png"}
-                    alt="Profile"
-                  />
-                  <AvatarFallback className="bg-blue-500">
-                    {user?.username?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              </Link>
-              <Button variant="destructive" onClick={handleLogout}>
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="secondary" asChild>
-                <Link to="/login">Login</Link>
-              </Button>
-              <Button asChild>
-                <Link to="/register">Register</Link>
-              </Button>
-            </>
-          )}
+    <nav className="bg-background border-b">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center py-4">
+          <Link to="/" className="text-2xl font-bold text-primary">
+            AuthApp
+          </Link>
+          
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-4">
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.avatar || "/placeholder.svg?height=32&width=32"} alt="Profile" />
+                      <AvatarFallback>{user?.username?.charAt(0) || "U"}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/login">Log in</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/register">Sign up</Link>
+                </Button>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4">
+            {isAuthenticated ? (
+              <div className="space-y-4">
+                <Link
+                  to="/profile"
+                  className="block px-4 py-2 text-sm hover:bg-accent rounded-md"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                <Link
+                  to="/settings"
+                  className="block px-4 py-2 text-sm hover:bg-accent rounded-md"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Settings
+                </Link>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-red-600"
+                  onClick={() => {
+                    handleLogout()
+                    setIsMenuOpen(false)
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Link to="/login">Log in</Link>
+                </Button>
+                <Button
+                  className="w-full justify-start"
+                  asChild
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Link to="/register">Sign up</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </nav>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
