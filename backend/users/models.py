@@ -4,8 +4,14 @@ from django.core.validators import validate_email
 from users.validators import validate_email_domain
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.utils.text import slugify
+from django.conf import settings
+import os
 # Create your models here.
 
+def user_directory_path(instance, filename):
+    # Generate a directory path with the user's email or ID
+    return f'avatars/{slugify(instance.username)}/{filename}'
 
 class CustomUserManager(BaseUserManager):
     def email_validator(self, email):
@@ -46,7 +52,7 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
-    avatar = models.ImageField(blank=True, null=True, upload_to='avatars/')  # Add avatar field
+    avatar = models.ImageField(blank=True, null=True, upload_to=user_directory_path)  # Custom path for each user
     username = models.CharField(max_length=150, unique=True)  # Add username field
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']  # Username is now required
