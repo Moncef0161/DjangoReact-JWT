@@ -26,9 +26,12 @@ const Profile: React.FC = () => {
   const { toast } = useToast();
   const [username, setUsername] = useState(user?.username || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [avatar, setAvatar] = useState(user?.avatar || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>(
+    user?.avatar || ""
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -46,7 +49,7 @@ const Profile: React.FC = () => {
       updateUserProfile({
         username,
         email,
-        avatar,
+        avatar: avatarFile,
         ...(password && { password }),
       })
     );
@@ -70,9 +73,18 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <motion.div
@@ -105,10 +117,8 @@ const Profile: React.FC = () => {
                     className="w-24 h-24 cursor-pointer"
                     onClick={triggerFileInput}
                   >
-                    <AvatarImage src={avatar} alt="Profile" />
-                    <AvatarFallback>
-                      {username.charAt(0).toUpperCase()}
-                    </AvatarFallback>
+                    <AvatarImage src={avatarPreview} alt="Profile" />
+                    <AvatarFallback>{username.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <button
                     type="button"
@@ -117,8 +127,15 @@ const Profile: React.FC = () => {
                   >
                     <Camera size={16} />
                   </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                    accept="image/*"
+                  />
                 </div>
-                <input
+                {/* <input
                   type="file"
                   ref={fileInputRef}
                   name="avatar"
@@ -130,7 +147,7 @@ const Profile: React.FC = () => {
                     }
                   }}
                   className="hidden"
-                />
+                /> */}
               </div>
 
               <div className="space-y-2">

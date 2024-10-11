@@ -2,12 +2,11 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
-
 interface User {
   id: number;
   email: string;
   username: string;
-  avatar: string;
+  avatar: File | string | null;
 }
 
 interface AuthState {
@@ -105,15 +104,31 @@ export const updateUserProfile = createAsyncThunk(
 
       if (!userId) throw new Error("User not authenticated");
 
-      // API call to update user profile with password if provided
-      const response = await api.patch(`/api/user/${userId}/`, profileData);
+      const formData = new FormData();
+      if (profileData.username) {
+        formData.append("username", profileData.username);
+      }
+      if (profileData.email) {
+        formData.append("email", profileData.email);
+      }
+      if (profileData.avatar) {
+        formData.append("avatar", profileData.avatar);
+      }
+
+      const response = await api.patch(`/api/user/${userId}/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data || "An error occurred while updating profile");
+      return rejectWithValue(
+        error.response?.data || "An error occurred while updating profile"
+      );
     }
   }
 );
-
 
 export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
