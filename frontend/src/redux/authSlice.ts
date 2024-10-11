@@ -97,7 +97,7 @@ export const registerUser = createAsyncThunk(
 
 export const updateUserProfile = createAsyncThunk(
   "auth/updateProfile",
-  async (profileData: Partial<User>, { getState, rejectWithValue }) => {
+  async (profileData: Partial<User> & { password?: string }, { getState, rejectWithValue }) => {
     try {
       const state = getState() as { auth: AuthState };
       const userId = state.auth.user?.id;
@@ -114,6 +114,10 @@ export const updateUserProfile = createAsyncThunk(
       if (profileData.avatar) {
         formData.append("avatar", profileData.avatar);
       }
+      if (profileData.password) {
+        formData.append("password", profileData.password);
+      }
+
 
       const response = await api.patch(`/api/user/${userId}/`, formData, {
         headers: {

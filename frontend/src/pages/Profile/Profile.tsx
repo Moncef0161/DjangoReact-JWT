@@ -44,7 +44,8 @@ const Profile: React.FC = () => {
       });
       return;
     }
-
+    console.log("password: ", password);
+    
     const resultAction = await dispatch(
       updateUserProfile({
         username,
@@ -53,7 +54,7 @@ const Profile: React.FC = () => {
         ...(password && { password }),
       })
     );
-
+    
     if (updateUserProfile.fulfilled.match(resultAction)) {
       toast({
         title: "Profile Updated",
