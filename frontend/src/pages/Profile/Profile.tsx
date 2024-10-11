@@ -27,7 +27,15 @@ const Profile: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const resultAction = await dispatch(updateUserProfile({ username, email, avatar }))
+    if (password && password !== confirmPassword) {
+      toast({
+        title: "Passwords do not match",
+        description: "Please make sure the passwords match.",
+        variant: "destructive",
+      })
+      return
+    }
+    const resultAction = await dispatch(updateUserProfile({ username, email, avatar, ...(password && { password }) }))
     
     if (updateUserProfile.fulfilled.match(resultAction)) {
       toast({

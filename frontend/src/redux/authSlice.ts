@@ -105,13 +105,15 @@ export const updateUserProfile = createAsyncThunk(
 
       if (!userId) throw new Error("User not authenticated");
 
+      // API call to update user profile with password if provided
       const response = await api.patch(`/api/user/${userId}/`, profileData);
       return response.data;
     } catch (error: any) {
-      throw error.response?.data || "An error occurred while updating profile";
+      return rejectWithValue(error.response?.data || "An error occurred while updating profile");
     }
   }
 );
+
 
 export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
