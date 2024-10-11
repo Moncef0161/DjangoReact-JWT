@@ -1,61 +1,78 @@
-
-
-import React, { useState, useRef } from "react"
-import { useSelector, useDispatch } from "react-redux"
-import { AppDispatch, RootState } from "@/redux/store"
-import { updateUserProfile } from "@/redux/authSlice"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/hooks/use-toast"
-import { motion } from "framer-motion"
-import { User, Mail, Lock, Camera } from "lucide-react"
+import React, { useState, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { updateUserProfile } from "@/redux/authSlice";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
+import { User, Mail, Lock, Camera } from "lucide-react";
 
 const Profile: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>()
-  const { user, loading, error } = useSelector((state: RootState) => state.auth)
-  const { toast } = useToast()
-  const [username, setUsername] = useState(user?.username || "")
-  const [email, setEmail] = useState(user?.email || "")
-  const [avatar, setAvatar] = useState(user?.avatar || "")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, loading, error } = useSelector(
+    (state: RootState) => state.auth
+  );
+  const { toast } = useToast();
+  const [username, setUsername] = useState(user?.username || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [avatar, setAvatar] = useState(user?.avatar || "");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     if (password && password !== confirmPassword) {
       toast({
         title: "Passwords do not match",
         description: "Please make sure the passwords match.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
-    const resultAction = await dispatch(updateUserProfile({ username, email, avatar, ...(password && { password }) }))
-    
+
+    const resultAction = await dispatch(
+      updateUserProfile({
+        username,
+        email,
+        avatar,
+        ...(password && { password }),
+      })
+    );
+
     if (updateUserProfile.fulfilled.match(resultAction)) {
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
         variant: "success",
-      })
+      });
     } else {
+      console.log("Error:", resultAction.error);
+      const errorMessage =
+        typeof error === "string" ? error : JSON.stringify(error);
       toast({
         title: "Update Failed",
-        description: error || "An error occurred while updating your profile.",
+        description:
+          errorMessage || "An error occurred while updating your profile.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const triggerFileInput = () => {
-    fileInputRef.current?.click()
-  }
-
+    fileInputRef.current?.click();
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <motion.div
@@ -66,7 +83,9 @@ const Profile: React.FC = () => {
       >
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Your Profile</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Your Profile
+            </CardTitle>
             <CardDescription className="text-center">
               Update your personal information
             </CardDescription>
@@ -74,15 +93,22 @@ const Profile: React.FC = () => {
           <CardContent>
             {error && (
               <Alert variant="destructive" className="mb-4">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>
+                  {typeof error === "string" ? error : JSON.stringify(error)}
+                </AlertDescription>
               </Alert>
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex justify-center mb-4">
                 <div className="relative">
-                  <Avatar className="w-24 h-24 cursor-pointer" onClick={triggerFileInput}>
+                  <Avatar
+                    className="w-24 h-24 cursor-pointer"
+                    onClick={triggerFileInput}
+                  >
                     <AvatarImage src={avatar} alt="Profile" />
-                    <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>
+                      {username.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <button
                     type="button"
@@ -98,15 +124,15 @@ const Profile: React.FC = () => {
                   name="avatar"
                   accept="image/*"
                   onChange={(e) => {
-                    const file = e.target.files?.[0]
+                    const file = e.target.files?.[0];
                     if (file) {
-                      setAvatar(URL.createObjectURL(file))
+                      setAvatar(URL.createObjectURL(file));
                     }
                   }}
                   className="hidden"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <div className="relative">
@@ -176,7 +202,7 @@ const Profile: React.FC = () => {
         </Card>
       </motion.div>
     </div>
-  )
-}
+  );
+};
 
-export default Profile
+export default Profile;
