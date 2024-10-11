@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "../api";
 import { jwtDecode } from "jwt-decode";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 
 interface User {
   id: number;
@@ -31,23 +32,6 @@ const initialState: AuthState = {
   error: null,
 };
 
-const API_BASE_URL = "http://127.0.0.1:8000";
-// process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000";
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
-  }
-  return config;
-});
 
 const fetchUserDetails = async (userId: number, token: string) => {
   const response = await api.get(`/api/user/${userId}/`);
@@ -62,9 +46,9 @@ export const loginUser = createAsyncThunk(
   ) => {
     try {
       const response = await api.post("/api/token/", credentials);
-      const { access } = response.data;
-      localStorage.setItem("token", access);
-
+      const { access, refresh } = response.data;
+      localStorage.setItem(ACCESS_TOKEN, access);
+      localStorage.setItem(REFRESH_TOKEN, refresh);
       const decodedToken = jwtDecode<JwtPayload>(access);
       const user = await fetchUserDetails(decodedToken.user_id, access);
 
@@ -137,7 +121,7 @@ export const updateUserProfile = createAsyncThunk(
 export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
   async (_, { rejectWithValue }) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       throw "No token found";
     }
@@ -151,7 +135,8 @@ export const checkAuth = createAsyncThunk(
       const user = await fetchUserDetails(decodedToken.user_id, token);
       return { token, user };
     } catch (error) {
-      localStorage.removeItem("token");
+      localStorage.removeItem(ACCESS_TOKEN);
+      localStorage.removeItem(REFRESH_TOKEN);
       throw "Invalid token";
     }
   }
@@ -165,7 +150,8 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
-      localStorage.removeItem("token");
+      localStorage.removeItem(ACCESS_TOKEN);
+      localStorage.removeItem(REFRESH_TOKEN);
     },
   },
   extraReducers: (builder) => {
