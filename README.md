@@ -1,20 +1,7 @@
 
 # Authentication Web Application
 
-## Overview
-
-This project is a **full-stack authentication web application** built using modern technologies such as **Django**, **JWT** for authentication, **Vite React TypeScript** for the frontend, and **Django Rest Framework (DRF)** for the backend. It also incorporates **TailwindCSS**, **ShadCN**, and **Redux** for efficient state management and UI styling.
-
-## Features
-
-- **JWT-based Authentication**: Secure token-based authentication using JSON Web Tokens (JWT).
-- **Django Rest Framework**: RESTful APIs to handle the backend logic and communication.
-- **Vite + React + TypeScript**: Fast frontend development experience using Vite, React, and TypeScript.
-- **TailwindCSS**: Utility-first CSS framework for responsive and modern design.
-- **ShadCN**: Component library for building accessible and reusable UI components.
-- **Redux**: Centralized state management for predictable and scalable application state.
-
-## Tech Stack
+## Used tools
 
 ### Frontend:
 - **React** (with **TypeScript**)
