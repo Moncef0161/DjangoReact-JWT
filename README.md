@@ -18,8 +18,8 @@
 ## Getting Started
 
 ### Prerequisites
-- **Node.js**: v16.x or later
-- **Python**: 3.x
+- **Node.js**: v20.11.1
+- **Python**: 3.11
 - **npm**: Latest version
 - **Django**: Installed in a virtual environment
 
