@@ -28,7 +28,7 @@
 #### Backend (Django + DRF)
 1. Clone the repository:
     ```bash
-    git clone [https://github.com/yourusername/yourproject.git](https://github.com/Moncef0161/DjangoReact-JWT.git)
+    git clone https://github.com/Moncef0161/DjangoReact-JWT.git
     ```
 2. Navigate to the backend directory:
     ```bash
