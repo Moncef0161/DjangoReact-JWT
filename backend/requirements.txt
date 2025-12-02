@@ -1,6 +1,7 @@
 Django==4.2.3
 djangorestframework==3.14.0
 djangorestframework_simplejwt==5.3.1
-environs==11.0.0
-django-cors-headers
+python-decouple==3.8
+django-cors-headers==4.9.0
 pillow==10.4.0
+dj-database-url==3.0.1
