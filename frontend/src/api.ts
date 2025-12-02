@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants";
 
-const API_BASE_URL = "http://127.0.0.1:8000"; 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -54,14 +54,16 @@ api.interceptors.response.use(
       try {
         // Attempt to refresh the access token
         console.log("expirsed token");
-        const { data } = await axios.post(`${API_BASE_URL}/api/token/refresh/`, {
-          refresh: refreshToken,
-        });
+        const { data } = await axios.post(
+          `${API_BASE_URL}/api/token/refresh/`,
+          {
+            refresh: refreshToken,
+          }
+        );
         console.log("data: ", data);
 
         // Update tokens in localStorage
         localStorage.setItem(ACCESS_TOKEN, data.access);
-     
 
         // Update the authorization header in the original request with the new token
         originalRequest.headers.Authorization = `Bearer ${data.access}`;
