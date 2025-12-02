@@ -84,7 +84,7 @@ const Navbar: React.FC = () => {
             ) : (
               <>
                 <Button
-                  variant={selectedButton === "login" ? undefined : "outline"}
+                  variant={selectedButton === "login" ? undefined : "outline-solid"}
                   asChild
                   onClick={() => setSelectedButton("login")}
                 >
@@ -92,7 +92,7 @@ const Navbar: React.FC = () => {
                 </Button>
                 <Button
                   variant={
-                    selectedButton === "register" ? undefined : "outline"
+                    selectedButton === "register" ? undefined : "outline-solid"
                   }
                   asChild
                   onClick={() => setSelectedButton("register")}
